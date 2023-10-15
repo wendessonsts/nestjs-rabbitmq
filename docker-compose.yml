@@ -1,0 +1,36 @@
+version: "3"
+services:
+  consume-email-nest:
+    build: ./consume-email-nest
+    entrypoint: sh -c "npm install && npm run start:dev"
+    ports: 
+      - 3001:3000
+    volumes:
+      - ./consume-email-nest:/home/node/consume-email-nest
+    depends_on: 
+      - rabbitmq
+    env_file:
+      - ./consume-email-nest/.env
+  send-email-nest:
+    build: ./send-email-nest
+    entrypoint: sh -c "npm install && npm run start:dev"
+    ports: 
+      - 3000:3000
+    volumes:
+      - ./send-email-nest:/home/node/send-email-nest
+    depends_on: 
+      - rabbitmq
+    env_file:
+      - ./send-email-nest/.env
+  rabbitmq:
+    image: "rabbitmq:3.10.25-management-alpine"
+    container_name: nodejs-rabbitmq-rabbitmq
+    hostname: rabbitmq
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    volumes:
+      - "./send-email-nest/rabbitmq_data:/var/lib/rabbitmq/"
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
